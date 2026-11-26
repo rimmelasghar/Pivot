@@ -14,8 +14,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -222,3 +222,16 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 Pivot_design_doc.md
+# Node / Next.js
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+.pnpm-store/
+coverage/
+playwright-report/
+test-results/
+
+# Pivot runtime data
+apps/api/data/
