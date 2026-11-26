@@ -19,6 +19,7 @@ export function usePhoneSensors(active: boolean) {
   const latest = useRef<Latest>({ q: [0, 0, 0, 1], version: 0 });
   const [source, setSource] = useState<SourceKind | null>(null);
   const [noSensor, setNoSensor] = useState(false);
+  const noSensorShown = useRef(false);
 
   useEffect(() => {
     if (!active) return;
@@ -31,9 +32,17 @@ export function usePhoneSensors(active: boolean) {
         l.q[2] = q[2];
         l.q[3] = q[3];
         l.version += 1;
+        // Data arrived late: hide the warning (one state update, not one per reading).
+        if (noSensorShown.current) {
+          noSensorShown.current = false;
+          setNoSensor(false);
+        }
       },
       onSource: setSource,
-      onNoSensor: () => setNoSensor(true),
+      onNoSensor: () => {
+        noSensorShown.current = true;
+        setNoSensor(true);
+      },
     });
     return () => {
       stop();

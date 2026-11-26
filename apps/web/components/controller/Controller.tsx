@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import type { Mode } from "@pivot/protocol";
+import { useEffect, useState } from "react";
 import { requestMotionPermission } from "@/lib/sensors/sources";
 import { useConnection } from "@/lib/store";
 import { usePivotSocket } from "@/lib/usePivotSocket";
+import { Controls } from "./Controls";
 import { useMotionStream } from "./useMotionStream";
 import { usePhoneSensors } from "./usePhoneSensors";
 
@@ -16,6 +18,7 @@ export function Controller({ sessionId, pairToken }: Props) {
   const [started, setStarted] = useState(false);
   const [denied, setDenied] = useState(false);
   const [modelName, setModelName] = useState<string | null>(null);
+  const [mode, setMode] = useState<Mode>("full");
   const status = useConnection((s) => s.status);
   const peer = useConnection((s) => s.peerConnected);
   const { latest, source, noSensor } = usePhoneSensors(started);
@@ -28,6 +31,11 @@ export function Controller({ sessionId, pairToken }: Props) {
     onMessage: (msg) => msg.t === "model" && setModelName(msg.name),
   });
   useMotionStream(socket, latest, started);
+
+  // The desktop forgets the mode when either side reconnects: tell it again.
+  useEffect(() => {
+    if (status === "open" && peer) socket?.send({ t: "mode", mode });
+  }, [socket, status, peer, mode]);
 
   const start = async () => {
     // Must run inside the tap handler: iOS only shows the prompt for a user gesture.
@@ -55,11 +63,19 @@ export function Controller({ sessionId, pairToken }: Props) {
   }
 
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
+    <div className="flex h-full flex-col items-center justify-center gap-6 p-6 text-center">
       <p data-testid="phone-status" className="text-2xl font-semibold">
         {status !== "open" ? "Connecting…" : peer ? "Connected" : "Waiting for the desktop…"}
       </p>
       {modelName && <p className="text-white/60">{modelName}</p>}
+      <Controls
+        mode={mode}
+        onModeChange={setMode}
+        onRecenter={() => {
+          socket?.send({ t: "recenter" });
+          navigator.vibrate?.(15);
+        }}
+      />
       {noSensor && (
         <p data-testid="no-sensor" className="text-red-400">
           This device has no motion sensor.

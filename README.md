@@ -29,6 +29,11 @@ Open http://localhost:8080.
   (phones only expose motion sensors on secure pages). The desktop shows a QR code; scan it,
   tap "Tap to connect", and both screens show that they are connected, with the round-trip time.
   The first start of the tunnel can take ~10 s ("Preparing secure link…").
+- **Phase 3 – motion sync.** After "Tap to connect" (iOS asks for motion access here) the model
+  follows the phone. Turning the phone left/right spins the model, tilting it tilts the model,
+  however you hold the phone. "Recenter" makes the current pose neutral; "Tilt only" ignores
+  turning left/right (useful on phones with a poor compass). Mouse control is off while a phone
+  is paired.
 
 ## Development
 
