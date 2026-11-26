@@ -104,3 +104,8 @@ export function resetPose(store: Store = motionStore): void {
 /** Frame-rate independent smoothing factor for slerp (k = 18). */
 export const SMOOTHING_K = 18;
 export const smoothingAlpha = (dt: number, k = SMOOTHING_K) => 1 - Math.exp(-k * dt);
+
+// Read-only handle for end-to-end tests and debugging in the browser console.
+if (typeof window !== "undefined") {
+  (window as unknown as { __pivot?: object }).__pivot = { motion: motionStore };
+}

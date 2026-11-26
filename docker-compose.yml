@@ -19,6 +19,7 @@ services:
         required: false
     environment:
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-}
       STORAGE_DIR: /data/models
     volumes:
       - models:/data/models
