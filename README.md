@@ -1,4 +1,11 @@
-# Pivot
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/pivot-logo-dark.png">
+    <img alt="Pivot" src="docs/brand/pivot-logo.png" width="320">
+  </picture>
+</h1>
+
+<p align="center"><strong>Move your phone. Move the model.</strong></p>
 
 Upload a 3D model on your laptop, scan a QR code with your phone, and rotate the model by moving
 the phone. No app to install: the phone opens a web page, reads its orientation sensors and
@@ -134,6 +141,13 @@ The MVP (phases 0–4) is done: upload and viewer, tunnel and pairing, motion sy
 (status and RTT, error screens, background/resume, rate limits) and an end-to-end test.
 Next: a WebRTC DataChannel for lower latency, then OBJ/FBX/STL conversion, multiple phones and
 an embeddable viewer.
+
+## Brand
+
+Logo files are in [docs/brand](docs/brand): the Orbit cube mark (`pivot-mark.svg`, and
+`pivot-mark-dark.svg` for dark backgrounds), the app icon (`pivot-app-icon.svg`) and the
+wordmark lockup (`pivot-logo.png`, `pivot-logo-dark.png`). Colors: Ink `#111318`, Pivot Blue
+`#3D5AFE`, Paper `#F6F5F2`. Wordmark: Space Grotesk 600; interface text: Inter.
 
 ## License
 
