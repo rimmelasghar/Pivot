@@ -4,6 +4,7 @@ import { useState } from "react";
 import { requestMotionPermission } from "@/lib/sensors/sources";
 import { useConnection } from "@/lib/store";
 import { usePivotSocket } from "@/lib/usePivotSocket";
+import { useMotionStream } from "./useMotionStream";
 import { usePhoneSensors } from "./usePhoneSensors";
 
 interface Props {
@@ -17,15 +18,16 @@ export function Controller({ sessionId, pairToken }: Props) {
   const [modelName, setModelName] = useState<string | null>(null);
   const status = useConnection((s) => s.status);
   const peer = useConnection((s) => s.peerConnected);
-  const { source, noSensor } = usePhoneSensors(started);
+  const { latest, source, noSensor } = usePhoneSensors(started);
 
-  usePivotSocket({
+  const socket = usePivotSocket({
     sessionId,
     role: "phone",
     token: pairToken,
     enabled: started,
     onMessage: (msg) => msg.t === "model" && setModelName(msg.name),
   });
+  useMotionStream(socket, latest, started);
 
   const start = async () => {
     // Must run inside the tap handler: iOS only shows the prompt for a user gesture.
