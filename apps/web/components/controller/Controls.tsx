@@ -20,7 +20,7 @@ export function Controls({ mode, onRecenter, onModeChange }: Props) {
         Recenter
       </button>
       <label className="flex items-center justify-between rounded-2xl bg-white/5 px-5 py-4">
-        <span>
+        <span className="text-left">
           <span className="block font-medium">Tilt only</span>
           <span className="block text-xs text-white/50">Ignore turning left and right</span>
         </span>

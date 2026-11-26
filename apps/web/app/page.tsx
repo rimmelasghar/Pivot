@@ -2,12 +2,14 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
+import { ErrorCard } from "@/components/ErrorCard";
 import { QrPanel } from "@/components/desktop/QrPanel";
 import { UploadZone } from "@/components/desktop/UploadZone";
 import { uploadModel, type ModelUploaded } from "@/lib/api";
 import { handlePhoneMessage, onPhoneConnected, resetPose } from "@/lib/motion";
+import { errorScreen } from "@/lib/errors";
 import { useConnection } from "@/lib/store";
-import { useDesktopSession } from "@/lib/useDesktopSession";
+import { startNewSession, useDesktopSession } from "@/lib/useDesktopSession";
 import { usePivotSocket } from "@/lib/usePivotSocket";
 
 const Scene = dynamic(() => import("@/components/viewer/Scene"), { ssr: false });
@@ -29,6 +31,9 @@ export default function DesktopPage() {
     },
   });
   const phoneConnected = useConnection((s) => s.peerConnected);
+  const socketStatus = useConnection((s) => s.status);
+  const socketError = useConnection((s) => s.error);
+  const fatal = socketStatus === "failed" ? errorScreen(socketError) : null;
 
   useEffect(() => {
     if (phoneConnected) onPhoneConnected();
@@ -63,6 +68,23 @@ export default function DesktopPage() {
       </header>
 
       <section className="relative flex-1">
+        {fatal && (
+          <div className="absolute inset-0 z-10 bg-[#0b0d12]/95">
+            <ErrorCard
+              screen={{
+                ...fatal,
+                body: "Start a new session and scan the new QR code with your phone.",
+              }}
+              actionLabel="Start a new session"
+              onAction={startNewSession}
+            />
+          </div>
+        )}
+        {socketStatus === "reconnecting" && (
+          <div className="absolute left-1/2 top-2 z-10 -translate-x-1/2 rounded-full bg-amber-500/15 px-4 py-1.5 text-sm text-amber-300">
+            Reconnecting to server…
+          </div>
+        )}
         {error && <Centered className="text-red-400">{error}</Centered>}
         {!error && !session && <Centered className="text-white/50">Starting session…</Centered>}
 

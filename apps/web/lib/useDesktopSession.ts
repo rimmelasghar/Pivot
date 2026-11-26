@@ -22,6 +22,16 @@ function save(session: SessionCreated) {
   }
 }
 
+/** Forget this tab's session and start a new one. */
+export function startNewSession() {
+  try {
+    sessionStorage.removeItem(KEY);
+  } catch {
+    // ignore
+  }
+  location.reload();
+}
+
 export type DesktopSession = SessionCreated & { initial: SessionState | null };
 
 /** Create a session on load; reuse this tab's session after a reload if it is still alive. */
