@@ -2,19 +2,18 @@
 
 import { ContactShadows, Environment, OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { Suspense, useRef, type ReactNode } from "react";
+import { Suspense, useRef } from "react";
 import type { Group } from "three";
 import { Model } from "./Model";
+import { PhoneDriver } from "./PhoneDriver";
 
 interface Props {
   url: string;
   /** Mouse orbit is enabled only while no phone controls the model. */
   orbit: boolean;
-  /** Extra scene content that drives the model (e.g. phone rotation), given the model ref. */
-  children?: (model: React.RefObject<Group | null>) => ReactNode;
 }
 
-export default function Scene({ url, orbit, children }: Props) {
+export default function Scene({ url, orbit }: Props) {
   const model = useRef<Group>(null);
   return (
     <Canvas
@@ -24,7 +23,7 @@ export default function Scene({ url, orbit, children }: Props) {
       gl={{ antialias: true }}
     >
       <Suspense fallback={null}>
-        <Model ref={model} url={url} />
+        <Model key={url} ref={model} url={url} />
         <Environment preset="city" />
         <ContactShadows position={[0, -0.9, 0]} opacity={0.4} scale={4} blur={2.5} far={2} />
       </Suspense>
@@ -36,7 +35,7 @@ export default function Scene({ url, orbit, children }: Props) {
         maxDistance={8}
         makeDefault
       />
-      {children?.(model)}
+      <PhoneDriver model={model} />
     </Canvas>
   );
 }

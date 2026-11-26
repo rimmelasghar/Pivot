@@ -1,10 +1,12 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { QrPanel } from "@/components/desktop/QrPanel";
 import { UploadZone } from "@/components/desktop/UploadZone";
 import { uploadModel, type ModelUploaded } from "@/lib/api";
+import { handlePhoneMessage, onPhoneConnected, resetPose } from "@/lib/motion";
+import { useConnection } from "@/lib/store";
 import { useDesktopSession } from "@/lib/useDesktopSession";
 import { usePivotSocket } from "@/lib/usePivotSocket";
 
@@ -22,13 +24,24 @@ export default function DesktopPage() {
     role: "desktop",
     token: session?.desktopToken ?? "",
     enabled: !!session,
+    onMessage: (msg) => {
+      if (msg.t === "q" || msg.t === "recenter" || msg.t === "mode") handlePhoneMessage(msg);
+    },
   });
+  const phoneConnected = useConnection((s) => s.peerConnected);
+
+  useEffect(() => {
+    if (phoneConnected) onPhoneConnected();
+  }, [phoneConnected]);
 
   const model =
     uploaded ??
     (session?.initial?.modelUrl
       ? { modelUrl: session.initial.modelUrl, modelName: session.initial.modelName ?? "model" }
       : null);
+
+  const modelUrl = model?.modelUrl;
+  useEffect(() => resetPose(), [modelUrl]);
 
   const useSample = useCallback(async () => {
     if (!session) return;
@@ -75,7 +88,7 @@ export default function DesktopPage() {
         {session && model && (
           <>
             <div className="absolute inset-0">
-              <Scene url={model.modelUrl} orbit />
+              <Scene url={model.modelUrl} orbit={!phoneConnected} />
             </div>
             <div className="absolute right-6 top-2">
               <QrPanel pairUrl={session.pairUrl} />
