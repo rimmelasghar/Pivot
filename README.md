@@ -11,6 +11,27 @@ packages/protocol   WebSocket protocol: spec + TypeScript types
 infra               Caddyfile, dev compose overrides
 ```
 
-## Status
+## Run it
 
-Work in progress. See `AGENTS.md` for contribution rules.
+Prerequisite: Docker.
+
+```sh
+docker compose up --build
+```
+
+Open http://localhost:8080.
+
+## What works now
+
+- **Phase 1 – upload and viewer.** Drop a `.glb` / `.gltf` file (max 50 MB) on the page, or click
+  "try the sample model". The model is centred, scaled to fit and can be rotated with the mouse.
+
+## Development
+
+- Hot reload: `docker compose -f docker-compose.yml -f infra/docker-compose.dev.yml up --build`
+- Web checks (host): `pnpm install`, then `pnpm lint`, `pnpm typecheck`, `pnpm test`
+- API checks (container):
+  `docker compose -f docker-compose.yml -f infra/docker-compose.dev.yml run --rm api pytest`
+- Regenerate the sample model: `python apps/web/scripts/make_sample_glb.py`
+
+See `AGENTS.md` for contribution rules.

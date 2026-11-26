@@ -14,16 +14,22 @@
   },
   "dependencies": {
     "@pivot/protocol": "workspace:*",
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.2",
     "next": "15.5.29",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "three": "0.187.0",
+    "zustand": "^5.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.7",
+    "@playwright/test": "^1.65.1",
     "@tailwindcss/postcss": "^4.3.5",
     "@types/node": "^26.6.10",
     "@types/react": "^19.3.3",
     "@types/react-dom": "^19.3.0",
+    "@types/three": "^0.187.0",
     "eslint": "^9.39.5",
     "eslint-config-next": "15.5.29",
     "eslint-config-prettier": "^10.1.8",

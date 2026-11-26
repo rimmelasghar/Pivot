@@ -1,13 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import dynamic from "next/dynamic";
+import { useCallback, useState } from "react";
 import { UploadZone } from "@/components/desktop/UploadZone";
-import type { ModelUploaded } from "@/lib/api";
+import { uploadModel, type ModelUploaded } from "@/lib/api";
 import { useDesktopSession } from "@/lib/useDesktopSession";
+
+const Scene = dynamic(() => import("@/components/viewer/Scene"), { ssr: false });
+
+const SAMPLE = "/samples/pivot-block.glb";
 
 export default function DesktopPage() {
   const { session, error } = useDesktopSession();
   const [uploaded, setUploaded] = useState<ModelUploaded | null>(null);
+  const [sampleError, setSampleError] = useState<string | null>(null);
 
   const model =
     uploaded ??
@@ -15,24 +21,72 @@ export default function DesktopPage() {
       ? { modelUrl: session.initial.modelUrl, modelName: session.initial.modelName ?? "model" }
       : null);
 
+  const useSample = useCallback(async () => {
+    if (!session) return;
+    setSampleError(null);
+    try {
+      const blob = await (await fetch(SAMPLE)).blob();
+      const file = new File([blob], "pivot-block.glb", { type: "model/gltf-binary" });
+      setUploaded(await uploadModel(session.sessionId, session.desktopToken, file, () => {}));
+    } catch (e) {
+      setSampleError((e as Error).message);
+    }
+  }, [session]);
+
   return (
     <main className="flex h-full flex-col">
-      <header className="flex items-center justify-between px-6 py-4">
+      <header className="flex items-center justify-between gap-4 px-6 py-4">
         <h1 className="text-xl font-semibold tracking-tight">Pivot</h1>
-        {model && <span className="text-sm text-white/60">{model.modelName}</span>}
+        {model && <span className="truncate text-sm text-white/60">{model.modelName}</span>}
       </header>
-      <section className="flex flex-1 items-center justify-center p-6">
-        {error && <p className="text-red-400">{error}</p>}
-        {!error && !session && <p className="text-white/50">Starting session…</p>}
+
+      <section className="relative flex-1">
+        {error && <Centered className="text-red-400">{error}</Centered>}
+        {!error && !session && <Centered className="text-white/50">Starting session…</Centered>}
+
         {session && !model && (
-          <UploadZone
-            sessionId={session.sessionId}
-            token={session.desktopToken}
-            onUploaded={setUploaded}
-          />
+          <Centered>
+            <div className="w-full max-w-lg space-y-4 text-center">
+              <UploadZone
+                sessionId={session.sessionId}
+                token={session.desktopToken}
+                onUploaded={setUploaded}
+              />
+              <button
+                onClick={useSample}
+                className="text-sm text-sky-300 underline-offset-4 hover:underline"
+              >
+                or try the sample model
+              </button>
+              {sampleError && <p className="text-sm text-red-400">{sampleError}</p>}
+            </div>
+          </Centered>
         )}
-        {session && model && <p data-testid="model-ready">Model ready: {model.modelName}</p>}
+
+        {session && model && (
+          <>
+            <div className="absolute inset-0">
+              <Scene url={model.modelUrl} orbit />
+            </div>
+            <div className="absolute bottom-6 left-6 w-64">
+              <UploadZone
+                compact
+                sessionId={session.sessionId}
+                token={session.desktopToken}
+                onUploaded={setUploaded}
+              />
+            </div>
+          </>
+        )}
       </section>
     </main>
+  );
+}
+
+function Centered({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`absolute inset-0 flex items-center justify-center p-6 ${className}`}>
+      {children}
+    </div>
   );
 }
