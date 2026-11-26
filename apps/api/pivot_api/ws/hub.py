@@ -13,6 +13,7 @@ from redis.asyncio.client import PubSub
 
 from pivot_api.store.redis_store import Session, SessionStore, channel
 from pivot_api.ws import bus
+from pivot_api.ws.limits import RateLimiter, too_large
 from pivot_api.ws.messages import (
     CLOSE_ALREADY_PAIRED,
     CLOSE_BAD_TOKEN,
@@ -41,6 +42,7 @@ class Connection:
     ) -> None:
         self.ws = ws
         self.client_id = client_id
+        self.limiter = RateLimiter()
         self.store = store
         self.redis: Redis = store.redis
         self.session = session
@@ -64,6 +66,9 @@ class Connection:
                 await self.send(encode(ModelName(name=session.model_name)))
 
     async def handle(self, raw: str) -> None:
+        # Over 1 KB or over 120 messages per second: dropped without parsing.
+        if too_large(raw) or not self.limiter.allow():
+            return
         msg = parse_client_message(raw)
         if msg is None:
             return  # malformed: dropped
@@ -145,4 +150,9 @@ async def websocket(
         await store.release_presence(session_id, role, conn.id, client_id)
         if not await store.present(session_id, role):
             await bus.publish(store.redis, session_id, OTHER[role], Peer(connected=False))
-        log.info("ws close conn=%s after %.1fs", conn.id, time.monotonic() - started)
+        log.info(
+            "ws close conn=%s after %.1fs (%d rate-limited)",
+            conn.id,
+            time.monotonic() - started,
+            conn.limiter.dropped,
+        )

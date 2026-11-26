@@ -26,3 +26,10 @@ def redis() -> FakeAsyncRedis:
 def client(redis: FakeAsyncRedis) -> Iterator[TestClient]:
     with TestClient(create_app(redis=redis)) as c:
         yield c
+
+
+@pytest.fixture
+def session(client: TestClient) -> dict[str, str]:
+    data = client.post("/api/sessions").json()
+    data["pairToken"] = data["pairUrl"].split("?t=")[1]
+    return data

@@ -9,13 +9,6 @@ from starlette.websockets import WebSocketDisconnect
 GLB = b"glTF" + struct.pack("<II", 2, 12)
 
 
-@pytest.fixture
-def session(client: TestClient) -> dict[str, str]:
-    data = client.post("/api/sessions").json()
-    data["pairToken"] = data["pairUrl"].split("?t=")[1]
-    return data
-
-
 def connect(
     client: TestClient,
     session: dict[str, str],

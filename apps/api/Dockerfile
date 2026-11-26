@@ -8,7 +8,7 @@ RUN uv sync --locked --no-dev --no-install-project
 COPY pivot_api pivot_api
 RUN uv sync --locked --no-dev
 EXPOSE 8000
-CMD ["uvicorn", "pivot_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]
+CMD ["uvicorn", "pivot_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*", "--ws-max-size", "65536"]
 
 # Dev target: dev dependencies (pytest, ruff) and auto-reload.
 FROM base AS dev
