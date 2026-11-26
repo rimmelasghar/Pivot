@@ -1,10 +1,20 @@
 from collections.abc import Iterator
+from pathlib import Path
 
 import pytest
 from fakeredis import FakeAsyncRedis
 from fastapi.testclient import TestClient
 
 from pivot_api.main import create_app
+from pivot_api.settings import get_settings
+
+
+@pytest.fixture(autouse=True)
+def _storage_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+    monkeypatch.setenv("STORAGE_DIR", str(tmp_path / "models"))
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()
 
 
 @pytest.fixture
