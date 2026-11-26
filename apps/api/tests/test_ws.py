@@ -16,10 +16,17 @@ def session(client: TestClient) -> dict[str, str]:
     return data
 
 
-def connect(client: TestClient, session: dict[str, str], role: str, token: str | None = None):
+def connect(
+    client: TestClient,
+    session: dict[str, str],
+    role: str,
+    token: str | None = None,
+    cid: str = "",
+):
     if token is None:
         token = session["desktopToken"] if role == "desktop" else session["pairToken"]
-    return client.websocket_connect(f"/ws/{session['sessionId']}?role={role}&token={token}")
+    url = f"/ws/{session['sessionId']}?role={role}&token={token}&cid={cid}"
+    return client.websocket_connect(url)
 
 
 def recv(ws: WebSocketTestSession) -> dict:
@@ -158,3 +165,14 @@ def test_unknown_session(client: TestClient) -> None:
         with pytest.raises(WebSocketDisconnect) as exc:
             ws.receive_text()
         assert exc.value.code == 4404
+
+
+def test_same_phone_reconnects_while_old_socket_lingers(
+    client: TestClient, session: dict[str, str]
+) -> None:
+    with connect(client, session, "phone", cid="phone-a") as old:
+        recv(old)
+        with connect(client, session, "phone", cid="phone-a") as new:
+            assert recv(new)["t"] == "peer"
+            with connect(client, session, "phone", cid="phone-b") as other:
+                assert recv(other)["code"] == "already_paired"

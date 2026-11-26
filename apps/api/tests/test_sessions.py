@@ -79,3 +79,24 @@ async def test_new_desktop_takes_over(redis: FakeAsyncRedis) -> None:
     assert await store.claim_presence(session.id, "desktop", "b")
     await store.release_presence(session.id, "desktop", "a")
     assert await store.present(session.id, "desktop")
+
+
+async def test_same_phone_can_reclaim_its_slot(redis: FakeAsyncRedis) -> None:
+    store = SessionStore(redis, ttl=60)
+    session = await store.create()
+    assert await store.claim_presence(session.id, "phone", "conn1", "phoneA")
+    # The server has not noticed conn1 dropped; the same phone reconnects.
+    assert await store.claim_presence(session.id, "phone", "conn2", "phoneA")
+    assert not await store.claim_presence(session.id, "phone", "conn3", "phoneB")
+    # The stale connection's cleanup must not free the new connection's slot.
+    await store.release_presence(session.id, "phone", "conn1", "phoneA")
+    assert await store.present(session.id, "phone")
+    await store.release_presence(session.id, "phone", "conn2", "phoneA")
+    assert not await store.present(session.id, "phone")
+
+
+async def test_phone_without_client_id_cannot_reclaim(redis: FakeAsyncRedis) -> None:
+    store = SessionStore(redis, ttl=60)
+    session = await store.create()
+    assert await store.claim_presence(session.id, "phone", "conn1")
+    assert not await store.claim_presence(session.id, "phone", "conn2")

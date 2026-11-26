@@ -4,11 +4,14 @@ Source of truth for messages between the phone, the api and the desktop. The Typ
 types live in `src/index.ts`; the Pydantic mirror lives in `apps/api/pivot_api/ws/messages.py`.
 Any change updates all three in the same commit.
 
-**Endpoint:** `wss://<host>/ws/{sessionId}?role=desktop|phone&token=...`
+**Endpoint:** `wss://<host>/ws/{sessionId}?role=desktop|phone&token=...&cid=...`
 
 - `role=desktop` uses the `desktopToken` from `POST /api/sessions`.
 - `role=phone` uses the `pairToken` from the QR link (`/c/{sessionId}?t={pairToken}`).
   Only one phone may be connected at a time; a second one gets `already_paired` and is closed.
+- `cid` (phone, optional): a random id the phone page keeps for the session. A phone with the
+  same `cid` may take its slot back while the server still holds its old connection (for example
+  right after a network drop or an api restart).
 
 All messages are JSON objects with a `t` (type) field. The server rejects unknown fields.
 Sensor messages are sent up to 60 times per second, so keep them small.

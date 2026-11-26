@@ -70,25 +70,43 @@ class SessionStore:
         )
         await self.touch(session_id)
 
-    async def claim_presence(self, session_id: str, role: str, conn_id: str) -> bool:
-        """Mark a connection present. Only one phone may hold the slot; a new desktop
-        connection simply takes over the desktop slot."""
-        key = presence_key(session_id, role)
-        if role == "phone":
-            return bool(await self.redis.set(key, conn_id, nx=True, ex=PRESENCE_SECONDS))
-        await self.redis.set(key, conn_id, ex=PRESENCE_SECONDS)
-        return True
+    async def claim_presence(
+        self, session_id: str, role: str, conn_id: str, client_id: str = ""
+    ) -> bool:
+        """Mark a connection present.
 
-    async def refresh_presence(self, session_id: str, role: str, conn_id: str) -> None:
+        Only one phone may hold the slot, but the same phone (same `client_id`) may take it
+        back, e.g. after a network drop the server has not noticed yet. A new desktop
+        connection simply takes over the desktop slot.
+        """
         key = presence_key(session_id, role)
+        value = f"{client_id}:{conn_id}"
+        if role != "phone":
+            await self.redis.set(key, value, ex=PRESENCE_SECONDS)
+            return True
+        if await self.redis.set(key, value, nx=True, ex=PRESENCE_SECONDS):
+            return True
+        holder = await self.redis.get(key)
+        if client_id and holder is not None and holder.split(":", 1)[0] == client_id:
+            await self.redis.set(key, value, ex=PRESENCE_SECONDS)
+            return True
+        return False
+
+    async def refresh_presence(
+        self, session_id: str, role: str, conn_id: str, client_id: str = ""
+    ) -> None:
+        key = presence_key(session_id, role)
+        value = f"{client_id}:{conn_id}"
         if role == "desktop":
-            await self.redis.set(key, conn_id, ex=PRESENCE_SECONDS)
-        elif await self.redis.get(key) == conn_id:
+            await self.redis.set(key, value, ex=PRESENCE_SECONDS)
+        elif await self.redis.get(key) == value:
             await self.redis.expire(key, PRESENCE_SECONDS)
 
-    async def release_presence(self, session_id: str, role: str, conn_id: str) -> None:
+    async def release_presence(
+        self, session_id: str, role: str, conn_id: str, client_id: str = ""
+    ) -> None:
         key = presence_key(session_id, role)
-        if await self.redis.get(key) == conn_id:
+        if await self.redis.get(key) == f"{client_id}:{conn_id}":
             await self.redis.delete(key)
 
     async def present(self, session_id: str, role: str) -> bool:

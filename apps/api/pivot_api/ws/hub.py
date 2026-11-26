@@ -36,8 +36,11 @@ OTHER: dict[str, bus.Target] = {"desktop": "phone", "phone": "desktop"}
 
 
 class Connection:
-    def __init__(self, ws: WebSocket, store: SessionStore, session: Session, role: str) -> None:
+    def __init__(
+        self, ws: WebSocket, store: SessionStore, session: Session, role: str, client_id: str
+    ) -> None:
         self.ws = ws
+        self.client_id = client_id
         self.store = store
         self.redis: Redis = store.redis
         self.session = session
@@ -69,7 +72,7 @@ class Connection:
                 await bus.publish_raw(self.redis, self.sid, "desktop", raw)
         elif isinstance(msg, Ping):
             await self.send(encode(Pong(t="pong", ts=msg.ts)))
-            await self.store.refresh_presence(self.sid, self.role, self.id)
+            await self.store.refresh_presence(self.sid, self.role, self.id, self.client_id)
             await self.store.touch(self.sid)
         elif isinstance(msg, Hello):
             await self.send_peer_state()
@@ -100,7 +103,9 @@ async def reject(ws: WebSocket, code: ErrorCode, message: str, close_code: int) 
 
 
 @router.websocket("/ws/{session_id}")
-async def websocket(ws: WebSocket, session_id: str, role: str = "", token: str = "") -> None:
+async def websocket(
+    ws: WebSocket, session_id: str, role: str = "", token: str = "", cid: str = ""
+) -> None:
     await ws.accept()
     store: SessionStore = ws.app.state.store
     session = await store.get(session_id)
@@ -113,8 +118,9 @@ async def websocket(ws: WebSocket, session_id: str, role: str = "", token: str =
     if not secrets.compare_digest(token, expected):
         return await reject(ws, "bad_token", "This link is not valid.", CLOSE_BAD_TOKEN)
 
-    conn = Connection(ws, store, session, role)
-    if not await store.claim_presence(session_id, role, conn.id):
+    client_id = cid[:64].replace(":", "")
+    conn = Connection(ws, store, session, role, client_id)
+    if not await store.claim_presence(session_id, role, conn.id, client_id):
         return await reject(
             ws, "already_paired", "Another phone is already connected.", CLOSE_ALREADY_PAIRED
         )
@@ -136,7 +142,7 @@ async def websocket(ws: WebSocket, session_id: str, role: str = "", token: str =
         relay.cancel()
         with contextlib.suppress(asyncio.CancelledError, Exception):
             await relay
-        await store.release_presence(session_id, role, conn.id)
+        await store.release_presence(session_id, role, conn.id, client_id)
         if not await store.present(session_id, role):
             await bus.publish(store.redis, session_id, OTHER[role], Peer(connected=False))
         log.info("ws close conn=%s after %.1fs", conn.id, time.monotonic() - started)

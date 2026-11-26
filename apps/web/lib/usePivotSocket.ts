@@ -4,7 +4,7 @@ import type { Role, ServerMessage } from "@pivot/protocol";
 import { useEffect, useRef, useState } from "react";
 import { useConnection } from "./store";
 import { PivotSocket } from "./transport/socket";
-import { socketUrl } from "./transport/url";
+import { phoneClientId, socketUrl } from "./transport/url";
 
 interface Params {
   sessionId: string;
@@ -28,7 +28,7 @@ export function usePivotSocket({ sessionId, role, token, enabled = true, onMessa
     const conn = useConnection.getState();
     conn.reset();
     const s = new PivotSocket({
-      url: socketUrl(sessionId, role, token),
+      url: socketUrl(sessionId, role, token, role === "phone" ? phoneClientId(sessionId) : ""),
       role,
       onStatus: (status, error) => useConnection.getState().setStatus(status, error),
       onRtt: (ms) => useConnection.getState().setRtt(ms),
