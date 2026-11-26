@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { requestMotionPermission } from "@/lib/sensors/sources";
 import { useConnection } from "@/lib/store";
 import { usePivotSocket } from "@/lib/usePivotSocket";
+import { usePhoneSensors } from "./usePhoneSensors";
 
 interface Props {
   sessionId: string;
@@ -11,9 +13,11 @@ interface Props {
 
 export function Controller({ sessionId, pairToken }: Props) {
   const [started, setStarted] = useState(false);
+  const [denied, setDenied] = useState(false);
   const [modelName, setModelName] = useState<string | null>(null);
   const status = useConnection((s) => s.status);
   const peer = useConnection((s) => s.peerConnected);
+  const { source, noSensor } = usePhoneSensors(started);
 
   usePivotSocket({
     sessionId,
@@ -23,15 +27,27 @@ export function Controller({ sessionId, pairToken }: Props) {
     onMessage: (msg) => msg.t === "model" && setModelName(msg.name),
   });
 
+  const start = async () => {
+    // Must run inside the tap handler: iOS only shows the prompt for a user gesture.
+    const permission = await requestMotionPermission();
+    if (permission === "denied") return setDenied(true);
+    setStarted(true);
+  };
+
   if (!started) {
     return (
       <button
         data-testid="connect"
-        onClick={() => setStarted(true)}
-        className="flex h-full w-full flex-col items-center justify-center gap-3 bg-sky-500 text-white active:bg-sky-600"
+        onClick={start}
+        className="flex h-full w-full flex-col items-center justify-center gap-3 bg-sky-500 p-6 text-white active:bg-sky-600"
       >
         <span className="text-3xl font-semibold">Tap to connect</span>
         <span className="text-sm opacity-80">Then move your phone to rotate the model</span>
+        {denied && (
+          <span className="mt-4 rounded-lg bg-black/20 p-3 text-sm">
+            Motion access was denied. Allow it in Safari settings for this site, then tap again.
+          </span>
+        )}
       </button>
     );
   }
@@ -42,6 +58,12 @@ export function Controller({ sessionId, pairToken }: Props) {
         {status !== "open" ? "Connecting…" : peer ? "Connected" : "Waiting for the desktop…"}
       </p>
       {modelName && <p className="text-white/60">{modelName}</p>}
+      {noSensor && (
+        <p data-testid="no-sensor" className="text-red-400">
+          This device has no motion sensor.
+        </p>
+      )}
+      {source && <p className="text-xs text-white/30">sensor: {source}</p>}
     </div>
   );
 }
