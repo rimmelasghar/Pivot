@@ -178,4 +178,13 @@ describe("PivotSocket", () => {
     socket.reconnectNow();
     expect(FakeWS.instances).toHaveLength(2);
   });
+
+  it("reconnectNow leaves an attempt in flight alone", () => {
+    const { socket } = setup();
+    socket.connect();
+    socket.reconnectNow();
+    latest().serverOpen();
+    socket.reconnectNow();
+    expect(FakeWS.instances).toHaveLength(1);
+  });
 });

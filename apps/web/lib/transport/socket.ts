@@ -70,7 +70,8 @@ export class PivotSocket {
 
   /** Reconnect now (e.g. when the page becomes visible again), skipping any backoff wait. */
   reconnectNow(): void {
-    if (this.stopped || this.status === "failed" || this.status === "open") return;
+    // Only while waiting for a backoff timer; a connect attempt already in flight is left alone.
+    if (this.stopped || this.status !== "reconnecting" || this.retryTimer === null) return;
     this.attempt = 0;
     this.open();
   }
@@ -120,7 +121,7 @@ export class PivotSocket {
     this.retryTimer = setTimeout(() => this.open(), delay);
   }
 
-  private sendHello(): void {
+  sendHello(): void {
     const nav = typeof navigator === "undefined" ? undefined : navigator;
     this.send({
       t: "hello",

@@ -8,6 +8,7 @@ import { errorScreen } from "@/lib/errors";
 import { requestMotionPermission } from "@/lib/sensors/sources";
 import { useConnection } from "@/lib/store";
 import { usePivotSocket } from "@/lib/usePivotSocket";
+import { usePageVisible } from "@/lib/visibility";
 import { Controls } from "./Controls";
 import { useMotionStream } from "./useMotionStream";
 import { usePhoneSensors } from "./usePhoneSensors";
@@ -25,7 +26,10 @@ export function Controller({ sessionId, pairToken }: Props) {
   const status = useConnection((s) => s.status);
   const peer = useConnection((s) => s.peerConnected);
   const error = useConnection((s) => s.error);
-  const { latest, source, noSensor } = usePhoneSensors(started);
+  const visible = usePageVisible();
+  // In the background: sensors off, nothing sent. The socket stays (or reconnects on return).
+  const active = started && visible;
+  const { latest, source, noSensor } = usePhoneSensors(active);
 
   const socket = usePivotSocket({
     sessionId,
@@ -34,7 +38,15 @@ export function Controller({ sessionId, pairToken }: Props) {
     enabled: started,
     onMessage: (msg) => msg.t === "model" && setModelName(msg.name),
   });
-  useMotionStream(socket, latest, started);
+  useMotionStream(socket, latest, active);
+
+  // Back from the background: reconnect at once if the OS dropped the socket, else say hello
+  // so the server resends the peer state.
+  useEffect(() => {
+    if (!visible || !socket) return;
+    if (socket.status === "open") socket.sendHello();
+    else socket.reconnectNow();
+  }, [visible, socket]);
 
   // The desktop forgets the mode when either side reconnects: tell it again.
   useEffect(() => {
