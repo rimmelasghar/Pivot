@@ -2,9 +2,11 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useState } from "react";
+import { QrPanel } from "@/components/desktop/QrPanel";
 import { UploadZone } from "@/components/desktop/UploadZone";
 import { uploadModel, type ModelUploaded } from "@/lib/api";
 import { useDesktopSession } from "@/lib/useDesktopSession";
+import { usePivotSocket } from "@/lib/usePivotSocket";
 
 const Scene = dynamic(() => import("@/components/viewer/Scene"), { ssr: false });
 
@@ -14,6 +16,13 @@ export default function DesktopPage() {
   const { session, error } = useDesktopSession();
   const [uploaded, setUploaded] = useState<ModelUploaded | null>(null);
   const [sampleError, setSampleError] = useState<string | null>(null);
+
+  usePivotSocket({
+    sessionId: session?.sessionId ?? "",
+    role: "desktop",
+    token: session?.desktopToken ?? "",
+    enabled: !!session,
+  });
 
   const model =
     uploaded ??
@@ -67,6 +76,9 @@ export default function DesktopPage() {
           <>
             <div className="absolute inset-0">
               <Scene url={model.modelUrl} orbit />
+            </div>
+            <div className="absolute right-6 top-2">
+              <QrPanel pairUrl={session.pairUrl} />
             </div>
             <div className="absolute bottom-6 left-6 w-64">
               <UploadZone

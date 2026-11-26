@@ -25,6 +25,10 @@ Open http://localhost:8080.
 
 - **Phase 1 – upload and viewer.** Drop a `.glb` / `.gltf` file (max 50 MB) on the page, or click
   "try the sample model". The model is centred, scaled to fit and can be rotated with the mouse.
+- **Phase 2 – tunnel and pairing.** A cloudflared quick tunnel gives the stack a public HTTPS URL
+  (phones only expose motion sensors on secure pages). The desktop shows a QR code; scan it,
+  tap "Tap to connect", and both screens show that they are connected, with the round-trip time.
+  The first start of the tunnel can take ~10 s ("Preparing secure link…").
 
 ## Development
 
