@@ -5,17 +5,17 @@ from redis.asyncio import Redis
 
 from pivot_api.ids import nanoid, token
 
-# The phone slot lock is refreshed on every ping (5 s), so a crashed
-# connection frees the slot within this many seconds.
-PHONE_LOCK_SECONDS = 20
+# Presence keys are refreshed on every ping (5 s), so a crashed
+# connection frees its slot within this many seconds.
+PRESENCE_SECONDS = 20
 
 
 def session_key(session_id: str) -> str:
     return f"session:{session_id}"
 
 
-def phone_lock_key(session_id: str) -> str:
-    return f"session:{session_id}:phone"
+def presence_key(session_id: str, role: str) -> str:
+    return f"session:{session_id}:{role}"
 
 
 def channel(session_id: str) -> str:
@@ -70,23 +70,26 @@ class SessionStore:
         )
         await self.touch(session_id)
 
-    async def claim_phone(self, session_id: str, conn_id: str) -> bool:
-        """Take the single phone slot. Fails while another phone holds it."""
-        return bool(
-            await self.redis.set(
-                phone_lock_key(session_id), conn_id, nx=True, ex=PHONE_LOCK_SECONDS
-            )
-        )
+    async def claim_presence(self, session_id: str, role: str, conn_id: str) -> bool:
+        """Mark a connection present. Only one phone may hold the slot; a new desktop
+        connection simply takes over the desktop slot."""
+        key = presence_key(session_id, role)
+        if role == "phone":
+            return bool(await self.redis.set(key, conn_id, nx=True, ex=PRESENCE_SECONDS))
+        await self.redis.set(key, conn_id, ex=PRESENCE_SECONDS)
+        return True
 
-    async def refresh_phone(self, session_id: str, conn_id: str) -> None:
-        key = phone_lock_key(session_id)
-        if await self.redis.get(key) == conn_id:
-            await self.redis.expire(key, PHONE_LOCK_SECONDS)
+    async def refresh_presence(self, session_id: str, role: str, conn_id: str) -> None:
+        key = presence_key(session_id, role)
+        if role == "desktop":
+            await self.redis.set(key, conn_id, ex=PRESENCE_SECONDS)
+        elif await self.redis.get(key) == conn_id:
+            await self.redis.expire(key, PRESENCE_SECONDS)
 
-    async def release_phone(self, session_id: str, conn_id: str) -> None:
-        key = phone_lock_key(session_id)
+    async def release_presence(self, session_id: str, role: str, conn_id: str) -> None:
+        key = presence_key(session_id, role)
         if await self.redis.get(key) == conn_id:
             await self.redis.delete(key)
 
-    async def phone_connected(self, session_id: str) -> bool:
-        return bool(await self.redis.exists(phone_lock_key(session_id)))
+    async def present(self, session_id: str, role: str) -> bool:
+        return bool(await self.redis.exists(presence_key(session_id, role)))

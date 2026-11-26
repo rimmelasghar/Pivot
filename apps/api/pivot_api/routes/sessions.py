@@ -39,5 +39,5 @@ async def get_session(session_id: str, store: StoreDep) -> SessionState:
         session_id=session.id,
         model_url=session.model_url,
         model_name=session.model_name,
-        phone_connected=await store.phone_connected(session_id),
+        phone_connected=await store.present(session_id, "phone"),
     )

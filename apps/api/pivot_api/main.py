@@ -9,6 +9,7 @@ from pivot_api.routes import models, public_url, sessions
 from pivot_api.settings import get_settings
 from pivot_api.store.files import LocalFileStore
 from pivot_api.store.redis_store import SessionStore
+from pivot_api.ws import hub
 
 
 def create_app(redis: Redis | None = None) -> FastAPI:
@@ -42,6 +43,7 @@ def create_app(redis: Redis | None = None) -> FastAPI:
     app.include_router(sessions.router)
     app.include_router(models.router)
     app.include_router(public_url.router)
+    app.include_router(hub.router)
     return app
 
 

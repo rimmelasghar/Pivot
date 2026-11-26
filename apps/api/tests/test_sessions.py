@@ -63,9 +63,19 @@ async def test_touch_extends_ttl(redis: FakeAsyncRedis) -> None:
 async def test_single_phone_slot(redis: FakeAsyncRedis) -> None:
     store = SessionStore(redis, ttl=60)
     session = await store.create()
-    assert await store.claim_phone(session.id, "a")
-    assert not await store.claim_phone(session.id, "b")
-    await store.release_phone(session.id, "b")  # not the holder: no effect
-    assert await store.phone_connected(session.id)
-    await store.release_phone(session.id, "a")
-    assert await store.claim_phone(session.id, "b")
+    assert await store.claim_presence(session.id, "phone", "a")
+    assert not await store.claim_presence(session.id, "phone", "b")
+    await store.release_presence(session.id, "phone", "b")  # not the holder: no effect
+    assert await store.present(session.id, "phone")
+    await store.release_presence(session.id, "phone", "a")
+    assert not await store.present(session.id, "phone")
+    assert await store.claim_presence(session.id, "phone", "b")
+
+
+async def test_new_desktop_takes_over(redis: FakeAsyncRedis) -> None:
+    store = SessionStore(redis, ttl=60)
+    session = await store.create()
+    assert await store.claim_presence(session.id, "desktop", "a")
+    assert await store.claim_presence(session.id, "desktop", "b")
+    await store.release_presence(session.id, "desktop", "a")
+    assert await store.present(session.id, "desktop")

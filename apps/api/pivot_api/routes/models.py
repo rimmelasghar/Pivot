@@ -7,6 +7,8 @@ from fastapi.responses import FileResponse, JSONResponse
 from pivot_api.deps import StoreDep
 from pivot_api.schemas import CamelModel
 from pivot_api.store.files import LocalFileStore, UploadError
+from pivot_api.ws import bus
+from pivot_api.ws.messages import ModelName
 
 router = APIRouter(tags=["models"])
 
@@ -48,6 +50,7 @@ async def upload_model(
     # Version query defeats browser caching when a new model replaces the old one.
     url = f"/api/files/{session_id}/{path.name}?v={secrets.token_hex(4)}"
     await store.set_model(session_id, url, name)
+    await bus.publish(store.redis, session_id, "phone", ModelName(name=name))
     return ModelUploaded(model_url=url, model_name=name)
 
 
