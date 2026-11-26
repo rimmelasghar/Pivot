@@ -68,10 +68,14 @@ test("pair a phone and rotate the model", async ({ page: desk, browser, baseURL 
   const pairUrl = await openDesktop(desk, baseURL!);
   const phone = await openPhone(browser, pairUrl);
 
+  // First reading as soon as the controller is up (its sensor listener is attached by then):
+  // without data for 2 s the phone shows "No motion sensor" instead of its controls.
+  await expect(phone.getByTestId("status-pill")).toBeVisible();
+  await tilt(phone, 0, 0, 0);
+
   await expect(phone.getByTestId("status-pill")).toContainText("Connected");
   await expect(desk.getByTestId("phone-connected")).toBeVisible();
   await expect(phone.getByTestId("model-name")).toHaveText("pivot-block.glb");
-  await tilt(phone, 0, 0, 0);
 
   // First reading calibrates: the model stays put.
   await expectTarget(desk, IDENTITY);
