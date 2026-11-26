@@ -44,13 +44,12 @@ Latency is lowest when both devices are on the same network.
 
 ## How it works
 
-```
-phone ──HTTPS/WSS──▶ cloudflared tunnel ─┐
-                                         ├─▶ Caddy proxy :8080 ─┬─▶ web  (Next.js: viewer + controller)
-laptop ──http://localhost:8080 ──────────┘                      └─▶ api  (FastAPI: REST + WebSocket hub)
-                                                                         │
-                                                                       Redis (sessions with TTL + pub/sub)
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/how-it-works-dark.svg">
+  <img alt="Pivot architecture: the phone reaches the Caddy proxy through a cloudflared tunnel and the laptop reaches it on localhost:8080. Caddy sends pages to the Next.js web app and /api and /ws to the FastAPI api, which relays phone orientation to the laptop through Redis pub/sub." src="docs/how-it-works-light.svg" width="100%">
+</picture>
+
+Everything inside the dashed box runs in Docker Compose. The numbers match the steps below.
 
 1. The laptop creates a session (`POST /api/sessions`), uploads the model and connects to
    `/ws/{id}?role=desktop`.
