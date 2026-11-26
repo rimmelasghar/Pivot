@@ -1,0 +1,9 @@
+# Named Cloudflare tunnel with a fixed hostname instead of a quick tunnel.
+#   1. Create a tunnel in the Cloudflare dashboard that routes your hostname to http://proxy:80.
+#   2. Put TUNNEL_TOKEN and PUBLIC_BASE_URL=https://<your hostname> in .env.
+#   3. docker compose -f docker-compose.yml -f infra/docker-compose.named-tunnel.yml up
+services:
+  tunnel:
+    command: tunnel --no-autoupdate --metrics 0.0.0.0:2000 run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?set TUNNEL_TOKEN in .env}

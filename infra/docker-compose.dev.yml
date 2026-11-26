@@ -1,0 +1,20 @@
+# Hot reload overrides:
+#   docker compose -f docker-compose.yml -f infra/docker-compose.dev.yml up
+services:
+  web:
+    build:
+      target: dev
+    environment:
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - ./apps/web:/repo/apps/web
+      - ./packages:/repo/packages
+      - /repo/apps/web/node_modules
+      - /repo/apps/web/.next
+
+  api:
+    build:
+      target: dev
+    volumes:
+      - ./apps/api/pivot_api:/app/pivot_api
+      - ./apps/api/tests:/app/tests
