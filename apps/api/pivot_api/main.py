@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from redis.asyncio import Redis
 
-from pivot_api.routes import models, sessions
+from pivot_api.routes import models, public_url, sessions
 from pivot_api.settings import get_settings
 from pivot_api.store.files import LocalFileStore
 from pivot_api.store.redis_store import SessionStore
@@ -41,6 +41,7 @@ def create_app(redis: Redis | None = None) -> FastAPI:
 
     app.include_router(sessions.router)
     app.include_router(models.router)
+    app.include_router(public_url.router)
     return app
 
 
