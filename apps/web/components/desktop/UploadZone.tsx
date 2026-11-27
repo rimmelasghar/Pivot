@@ -52,7 +52,7 @@ export function UploadZone({ sessionId, token, compact, onUploaded }: Props) {
       className={[
         "cursor-pointer rounded-2xl border-2 border-dashed text-center transition-colors",
         compact ? "px-4 py-3 text-sm" : "px-10 py-16",
-        dragging ? "border-sky-400 bg-sky-400/10" : "border-white/20 hover:border-white/40",
+        dragging ? "border-accent bg-accent/10" : "border-fg/20 hover:border-fg/40",
       ].join(" ")}
     >
       <input
@@ -68,8 +68,8 @@ export function UploadZone({ sessionId, token, compact, onUploaded }: Props) {
       {busy ? (
         <div className="space-y-2">
           <p>Uploading… {Math.round(progress * 100)}%</p>
-          <div className="mx-auto h-1.5 w-48 overflow-hidden rounded bg-white/10">
-            <div className="h-full bg-sky-400" style={{ width: `${progress * 100}%` }} />
+          <div className="mx-auto h-1.5 w-48 overflow-hidden rounded bg-fg/10">
+            <div className="h-full bg-accent" style={{ width: `${progress * 100}%` }} />
           </div>
         </div>
       ) : (
@@ -77,11 +77,11 @@ export function UploadZone({ sessionId, token, compact, onUploaded }: Props) {
           <p className={compact ? "" : "text-lg font-medium"}>
             {compact ? "Drop another model or click" : "Drop a .glb or .gltf file here"}
           </p>
-          {!compact && <p className="mt-1 text-sm text-white/50">or click to choose · max 50 MB</p>}
+          {!compact && <p className="mt-1 text-sm text-fg/50">or click to choose · max 50 MB</p>}
         </>
       )}
       {error && (
-        <p role="alert" className="mt-3 text-sm text-red-400">
+        <p role="alert" className="mt-3 text-sm text-danger">
           {error}
         </p>
       )}

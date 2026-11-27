@@ -39,16 +39,16 @@ export function QrPanel({ pairUrl }: { pairUrl: string }) {
     return (
       <div
         data-testid="phone-connected"
-        className="flex items-center gap-2 rounded-full bg-emerald-500/15 px-4 py-2 text-sm text-emerald-300"
+        className="flex items-center gap-2 rounded-full bg-ok/15 px-4 py-2 text-sm text-ok"
       >
         <span className="h-2 w-2 rounded-full bg-emerald-400" />
-        Phone connected{rtt !== null && <span className="text-emerald-300/60">· {rtt} ms</span>}
+        Phone connected{rtt !== null && <span className="text-ok/60">· {rtt} ms</span>}
       </div>
     );
   }
 
   return (
-    <div className="w-64 rounded-2xl bg-white/5 p-4 text-center backdrop-blur">
+    <div className="w-64 rounded-2xl bg-fg/5 p-4 text-center backdrop-blur">
       <p className="mb-3 text-sm font-medium">Scan with your phone</p>
       <div className="mx-auto flex h-48 w-48 items-center justify-center rounded-xl bg-white p-3">
         {link ? (
@@ -63,13 +63,13 @@ export function QrPanel({ pairUrl }: { pairUrl: string }) {
           href={link}
           target="_blank"
           rel="noreferrer"
-          className="mt-3 block truncate text-xs text-white/40 hover:text-white/70"
+          className="mt-3 block truncate text-xs text-fg/40 hover:text-fg/70"
         >
           {link}
         </a>
       )}
       {status !== "open" && (
-        <p className="mt-2 text-xs text-amber-300/80">
+        <p className="mt-2 text-xs text-warn/80">
           {status === "failed" ? "Connection failed" : "Connecting to server…"}
         </p>
       )}

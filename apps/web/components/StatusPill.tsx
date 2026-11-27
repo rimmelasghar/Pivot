@@ -12,7 +12,7 @@ export function StatusPill() {
   return (
     <div
       data-testid="status-pill"
-      className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-2 text-sm"
+      className="inline-flex items-center gap-2 rounded-full bg-fg/5 px-4 py-2 text-sm"
     >
       <span className={`h-2 w-2 rounded-full ${dot}`} />
       {statusText(status, peer, rtt)}

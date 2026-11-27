@@ -1,11 +1,47 @@
 @import "tailwindcss";
 
+/* Theme is set by the inline script in layout.tsx: <html data-theme="light|dark">. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Brand colors (docs/brand): Ink #111318, Pivot Blue #3D5AFE, Paper #F6F5F2. */
+:root {
+  --bg: #f6f5f2;
+  --fg: #111318;
+  --accent: #3d5afe;
+  --ok: #047857;
+  --warn: #b45309;
+  --danger: #dc2626;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #111318;
+  --fg: #e6e8ee;
+  --accent: #8c9eff;
+  --ok: #6ee7b7;
+  --warn: #fcd34d;
+  --danger: #f87171;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-accent: var(--accent);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  /* Solid fills with white text: the same in both themes. */
+  --color-brand: #3d5afe;
+  --color-brand-strong: #2f48d8;
+}
+
 html,
 body {
   height: 100%;
 }
 
 body {
-  background: #0b0d12;
-  color: #e6e8ee;
+  background: var(--bg);
+  color: var(--fg);
 }

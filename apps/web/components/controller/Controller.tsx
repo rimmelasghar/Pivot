@@ -73,7 +73,7 @@ export function Controller({ sessionId, pairToken }: Props) {
       <button
         data-testid="connect"
         onClick={start}
-        className="flex h-full w-full flex-col items-center justify-center gap-3 bg-sky-500 p-6 text-white active:bg-sky-600"
+        className="flex h-full w-full flex-col items-center justify-center gap-3 bg-brand p-6 text-white active:bg-brand-strong"
       >
         <span className="text-3xl font-semibold">Tap to connect</span>
         <span className="text-sm opacity-80">Then move your phone to rotate the model</span>
@@ -86,12 +86,12 @@ export function Controller({ sessionId, pairToken }: Props) {
       <div className="flex flex-col items-center gap-2 pt-4">
         <StatusPill />
         {modelName && (
-          <p data-testid="model-name" className="max-w-full truncate text-white/60">
+          <p data-testid="model-name" className="max-w-full truncate text-fg/60">
             {modelName}
           </p>
         )}
       </div>
-      <p className="text-sm text-white/40">Move your phone to rotate the model.</p>
+      <p className="text-sm text-fg/40">Move your phone to rotate the model.</p>
       <Controls
         mode={mode}
         onModeChange={setMode}
@@ -100,7 +100,7 @@ export function Controller({ sessionId, pairToken }: Props) {
           navigator.vibrate?.(15);
         }}
       />
-      {source && <p className="text-xs text-white/25">sensor: {source}</p>}
+      {source && <p className="text-xs text-fg/25">sensor: {source}</p>}
     </div>
   );
 }
