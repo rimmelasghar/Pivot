@@ -15,14 +15,14 @@ export function Controls({ mode, onRecenter, onModeChange }: Props) {
       <button
         data-testid="recenter"
         onClick={onRecenter}
-        className="rounded-2xl bg-sky-500 py-6 text-xl font-semibold text-white active:bg-sky-600"
+        className="rounded-2xl bg-brand py-6 text-xl font-semibold text-white active:bg-brand-strong"
       >
         Recenter
       </button>
-      <label className="flex items-center justify-between rounded-2xl bg-white/5 px-5 py-4">
+      <label className="flex items-center justify-between rounded-2xl bg-fg/5 px-5 py-4">
         <span className="text-left">
           <span className="block font-medium">Tilt only</span>
-          <span className="block text-xs text-white/50">Ignore turning left and right</span>
+          <span className="block text-xs text-fg/50">Ignore turning left and right</span>
         </span>
         <input
           data-testid="tilt-only"
@@ -30,7 +30,7 @@ export function Controls({ mode, onRecenter, onModeChange }: Props) {
           role="switch"
           checked={tilt}
           onChange={(e) => onModeChange(e.target.checked ? "tilt" : "full")}
-          className="h-6 w-6 accent-sky-500"
+          className="h-6 w-6 accent-brand"
         />
       </label>
     </div>

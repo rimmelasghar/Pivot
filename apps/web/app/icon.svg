@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 112" width="512" height="512" role="img" aria-label="Pivot app icon">
+  <rect width="112" height="112" rx="26" fill="#111318"/>
+  <g transform="translate(14 14) scale(0.84)">
+    <path d="M50 24 L72 37 L50 50 L28 37 Z" fill="#3D5AFE" fill-opacity="0.5"/>
+    <path d="M28 37 L50 50 L50 76 L28 63 Z" fill="#3D5AFE"/>
+    <path d="M50 50 L72 37 L72 63 L50 76 Z" fill="#3D5AFE" fill-opacity="0.78"/>
+    <path d="M16 66 C 6 50, 30 28, 62 22 C 80 19, 92 24, 88 36" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
+    <path d="M86 42 L94.3 36 L82.9 32.2 Z" fill="#FFFFFF"/>
+  </g>
+</svg>

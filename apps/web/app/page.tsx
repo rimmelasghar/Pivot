@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { ErrorCard } from "@/components/ErrorCard";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { QrPanel } from "@/components/desktop/QrPanel";
 import { UploadZone } from "@/components/desktop/UploadZone";
 import { uploadModel, type ModelUploaded } from "@/lib/api";
@@ -63,13 +64,26 @@ export default function DesktopPage() {
   return (
     <main className="flex h-full flex-col">
       <header className="flex items-center justify-between gap-4 px-6 py-4">
-        <h1 className="text-xl font-semibold tracking-tight">Pivot</h1>
-        {model && <span className="truncate text-sm text-white/60">{model.modelName}</span>}
+        <h1 className="shrink-0">
+          {/* Finalized wordmark lockup (docs/brand); the dark variant has a white wordmark. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/pivot-logo.png" alt="Pivot" className="h-10 w-auto dark:hidden" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/pivot-logo-dark.png"
+            alt="Pivot"
+            className="hidden h-10 w-auto dark:block"
+          />
+        </h1>
+        <div className="flex min-w-0 items-center gap-4">
+          {model && <span className="truncate text-sm text-fg/60">{model.modelName}</span>}
+          <ThemeToggle />
+        </div>
       </header>
 
       <section className="relative flex-1">
         {fatal && (
-          <div className="absolute inset-0 z-10 bg-[#0b0d12]/95">
+          <div className="absolute inset-0 z-10 bg-bg/95">
             <ErrorCard
               screen={{
                 ...fatal,
@@ -81,12 +95,12 @@ export default function DesktopPage() {
           </div>
         )}
         {socketStatus === "reconnecting" && (
-          <div className="absolute left-1/2 top-2 z-10 -translate-x-1/2 rounded-full bg-amber-500/15 px-4 py-1.5 text-sm text-amber-300">
+          <div className="absolute left-1/2 top-2 z-10 -translate-x-1/2 rounded-full bg-warn/15 px-4 py-1.5 text-sm text-warn">
             Reconnecting to server…
           </div>
         )}
-        {error && <Centered className="text-red-400">{error}</Centered>}
-        {!error && !session && <Centered className="text-white/50">Starting session…</Centered>}
+        {error && <Centered className="text-danger">{error}</Centered>}
+        {!error && !session && <Centered className="text-fg/50">Starting session…</Centered>}
 
         {session && !model && (
           <Centered>
@@ -98,11 +112,11 @@ export default function DesktopPage() {
               />
               <button
                 onClick={useSample}
-                className="text-sm text-sky-300 underline-offset-4 hover:underline"
+                className="text-sm text-accent underline-offset-4 hover:underline"
               >
                 or try the sample model
               </button>
-              {sampleError && <p className="text-sm text-red-400">{sampleError}</p>}
+              {sampleError && <p className="text-sm text-danger">{sampleError}</p>}
             </div>
           </Centered>
         )}
